@@ -1,6 +1,6 @@
-# RiskMosaic
+# DeFi Risk Aggregator
 
-A neutral DeFi risk intelligence aggregator. It collects what the major risk feeds publish about the top Ethereum DeFi protocols and shows each feed's verdict verbatim, side by side. It produces no rating or score of its own. Where feeds disagree, you see the disagreement; where a feed is silent, the gap stays visible.
+A neutral aggregator of DeFi risk intelligence. It collects what the major risk feeds publish about the top Ethereum DeFi protocols and shows each feed's verdict verbatim, side by side. It produces no rating or score of its own. Where feeds disagree, you see the disagreement; where a feed is silent, the gap stays visible.
 
 ## Run it
 

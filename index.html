@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RiskMosaic · Neutral DeFi Risk Intelligence</title>
+<title>DeFi Risk Aggregator</title>
 <style>
   :root{
     --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e5e7eb; --line2:#f1f5f9; --line-strong:#cbd5e1;
@@ -137,14 +137,14 @@
 </style>
 <script>
   /* set theme before paint to avoid flash of wrong theme */
-  (function(){var t;try{t=localStorage.getItem('riskmosaic-theme')}catch(e){}
+  (function(){var t;try{t=localStorage.getItem('defi-risk-aggregator-theme')}catch(e){}
   if(t!=='dark'&&t!=='light')t='light';
   document.documentElement.setAttribute('data-theme',t);})();
 </script>
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="logo">Risk<span class="o">Mosaic</span></div>
+  <div class="logo">DeFi <span class="o">Risk</span> Aggregator</div>
   <span class="pill">v0 prototype</span>
   <nav>
     <a href="#" class="active" id="nav-overview" onclick="showView('overview');return false">Overview</a>
@@ -193,7 +193,7 @@
 
 <div id="view-meth" class="wrap meth hide">
   <div class="hero"><h1>Methodology</h1>
-  <p>RiskMosaic is an aggregation layer. It gathers what existing risk feeds publish and shows it verbatim. It produces no rating or score of its own.</p></div>
+  <p>DeFi Risk Aggregator gathers what existing risk feeds publish and shows it verbatim. It produces no rating or score of its own.</p></div>
   <h3>No composite scoring, by charter</h3>
   <p>No single feed should be the last word on something this important; that is the logic of oracle diversity. Putting the feeds side by side, without averaging them, is the whole point. The no-score rule lives in a charter in the repository, and changing it would need written agreement from the Ethereum Foundation.</p>
   <h3>The ring &amp; the colours</h3>
@@ -208,8 +208,8 @@
 <aside class="panel" id="panel"></aside>
 
 <footer><div class="wrap">
-  <div><strong>RiskMosaic</strong> · a neutral DeFi risk intelligence aggregator.</div>
-  <div style="margin-top:6px">Open source under <a href="https://github.com/cp0x-org/risk-mosaic" target="_blank" rel="noopener">AGPL-3.0 on GitHub</a>. Read the code, trace any number back to the source it links to, and run the whole thing yourself. Prototype: feed verdicts real &amp; sourced, TVL live from DefiLlama.</div>
+  <div><strong>DeFi Risk Aggregator</strong> · a neutral view of what every risk feed says.</div>
+  <div style="margin-top:6px">Open source under <a href="https://github.com/cp0x-org/defi-risk-aggregator" target="_blank" rel="noopener">AGPL-3.0 on GitHub</a>. Read the code, trace any number back to the source it links to, and run the whole thing yourself. Prototype: feed verdicts real &amp; sourced, TVL live from DefiLlama.</div>
 </div></footer>
 
 <script>
@@ -365,7 +365,7 @@ function showView(v){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
-  try{localStorage.setItem('riskmosaic-theme',t)}catch(e){}
+  try{localStorage.setItem('defi-risk-aggregator-theme',t)}catch(e){}
   var b=document.getElementById('themebtn');if(b)b.textContent=t==='dark'?'☀️':'🌙';
   renderOverview();renderGrid();
   if(_openIdx!=null&&document.getElementById('panel').classList.contains('open'))openPanel(_openIdx);
