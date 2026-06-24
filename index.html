@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RiskMosaic · Neutral DeFi Risk Intelligence</title>
+<style>
+  :root{
+    --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e5e7eb; --line2:#f1f5f9; --line-strong:#cbd5e1;
+    --bg:#ffffff; --bg2:#f8fafc; --surface:#ffffff;
+    --good:#15803d; --good-bg:#dcfce7; --caution:#b45309; --caution-bg:#fef3c7;
+    --alert:#b91c1c; --alert-bg:#fee2e2; --info:#1d4ed8; --info-bg:#dbeafe;
+    --none:#94a3b8; --none-bg:#f1f5f9; --accent:#0f766e;
+    --header-bg:rgba(255,255,255,.92);
+    --sample-bg:#fffbeb; --sample-line:#fde68a; --sample-ink:#92400e;
+    --ros-sep:#ffffff; --ros-center:#ffffff; --ros-none:#e2e8f0;
+    --tone-good:#16a34a; --tone-caution:#d97706; --tone-alert:#dc2626; --tone-info:#2563eb;
+  }
+  html[data-theme="dark"]{
+    --ink:#e6edf6; --ink2:#b3bfd0; --muted:#8a97ab; --line:#283450; --line2:#1b2438; --line-strong:#3a486a;
+    --bg:#0c1322; --bg2:#151f33; --surface:#121b2e;
+    --good:#34d399; --good-bg:#103127; --caution:#fbbf24; --caution-bg:#2c2410;
+    --alert:#f87171; --alert-bg:#311a1c; --info:#60a5fa; --info-bg:#13233f;
+    --none:#7f8da3; --none-bg:#1b2438; --accent:#2dd4bf;
+    --header-bg:rgba(12,19,34,.9);
+    --sample-bg:#241d09; --sample-line:#3f3614; --sample-ink:#fcd34d;
+    --ros-sep:#0c1322; --ros-center:#0c1322; --ros-none:#39455c;
+    --tone-good:#34d399; --tone-caution:#fbbf24; --tone-alert:#f87171; --tone-info:#60a5fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);background:var(--bg);font-size:14px;line-height:1.45}
+  code,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  header.top{border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--header-bg);backdrop-filter:blur(6px);z-index:30}
+  .top .wrap{display:flex;align-items:center;gap:14px;height:56px}
+  .logo{font-weight:700;letter-spacing:-.02em;font-size:16px}
+  .logo .o{color:var(--accent)}
+  .top nav{display:flex;gap:6px;margin-left:auto;font-size:13px}
+  .top nav a{color:var(--muted);padding:5px 10px;border-radius:7px}
+  .top nav a.active{color:var(--ink);font-weight:600;background:var(--bg2)}
+  .pill{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+  .themebtn{font:inherit;font-size:14px;line-height:1;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:5px 8px;cursor:pointer;color:var(--ink)}
+  .themebtn:hover{border-color:var(--line-strong)}
+
+  .sample{background:var(--sample-bg);border-bottom:1px solid var(--sample-line);color:var(--sample-ink);font-size:12px;text-align:center;padding:6px}
+
+  .hero{padding:26px 0 8px}
+  .hero h1{font-size:24px;letter-spacing:-.02em;margin:0 0 4px}
+  .hero p{color:var(--muted);margin:0;max-width:740px}
+  .creed{margin-top:14px;display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+  .creed b{color:var(--accent)}
+
+  .kpis{display:flex;gap:28px;margin:18px 0 6px;flex-wrap:wrap}
+  .kpi .n{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+
+  .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 6px}
+  .controls .lab{font-size:12px;color:var(--muted)}
+  .chip{font-size:12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;cursor:pointer;color:var(--ink)}
+  .chip:hover{border-color:var(--line-strong)}
+  .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:8px 0 0}
+  .legend .sw{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .d-good{background:var(--good)} .d-caution{background:var(--caution)} .d-alert{background:var(--alert)} .d-info{background:var(--info)} .d-none{background:var(--ros-none)}
+
+  table{border-collapse:separate;border-spacing:0;width:100%;margin:12px 0 40px}
+  thead th{position:sticky;top:56px;background:var(--bg);z-index:10}
+  th,td{padding:0;text-align:left}
+  .grp td{padding:18px 8px 7px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+  thead th{padding:9px 8px;font-size:11px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);vertical-align:bottom}
+  th.feedh{text-align:center;white-space:nowrap}
+  th.feedh .ty{display:block;font-weight:400;font-size:9px;text-transform:uppercase;letter-spacing:.03em;opacity:.7}
+  th.feedh.dim,td.cell.dim{opacity:.22}
+  th.proto{min-width:210px}
+  tbody tr.row{cursor:pointer;border-bottom:1px solid var(--line2)}
+  tbody tr.row:hover{background:var(--bg2)}
+  td.pname{padding:11px 8px}
+  .pn{display:flex;align-items:center;gap:10px}
+  .ico{width:24px;height:24px;border-radius:6px;background:var(--bg2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex:0 0 24px}
+  .pn .nm{font-weight:600}
+  .pn .ct{font-size:11px;color:var(--muted)}
+  td.num{padding:11px 8px;text-align:right;white-space:nowrap}
+  td.num .mono{font-size:13px}
+  td.gov{padding:11px 8px;font-size:12px;color:var(--muted);white-space:nowrap}
+
+  td.roscell{padding:8px;text-align:center}
+  .ros{display:block;margin:0 auto}
+  td.covtxt{padding:11px 8px;font-size:12px;color:var(--muted);white-space:nowrap}
+
+  td.cell{text-align:center;padding:8px 5px}
+  .v{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:22px;border-radius:6px;font-size:11px;font-weight:700;padding:0 7px}
+  .v.good{background:var(--good-bg);color:var(--good)}
+  .v.caution{background:var(--caution-bg);color:var(--caution)}
+  .v.alert{background:var(--alert-bg);color:var(--alert)}
+  .v.info{background:var(--info-bg);color:var(--info)}
+  .v.none{background:transparent;color:var(--none);font-weight:400;border:1px dashed var(--line)}
+  .cov{font-size:11px;color:var(--muted);white-space:nowrap;padding-right:8px}
+
+  .scrim{position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:40;display:none}
+  .scrim.open{display:block}
+  .panel{position:fixed;top:0;right:0;height:100%;width:580px;max-width:94vw;background:var(--surface);box-shadow:-12px 0 40px rgba(2,6,23,.4);z-index:50;transform:translateX(100%);transition:transform .18s ease;overflow:auto}
+  .panel.open{transform:none}
+  .ph{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .ph .x{float:right;cursor:pointer;color:var(--muted);font-size:18px;line-height:1}
+  .ph h2{margin:0;font-size:19px;display:flex;align-items:center;gap:10px}
+  .ph .meta{display:flex;gap:22px;margin-top:12px;flex-wrap:wrap}
+  .ph .meta .l{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .ph .meta .v2{font-size:14px;font-weight:600}
+  .pbody{padding:18px 22px}
+  .sec-t{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 4px}
+  .sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+  .panelros{display:flex;align-items:center;gap:16px;margin:6px 0 18px}
+
+  .spread2{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin:8px 0 22px;background:var(--bg2)}
+  .sp-end{font-size:10px;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+  .sp-chip{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .sp-fn{font-size:9px;color:var(--muted);white-space:nowrap}
+
+  .feedrow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line2);align-items:flex-start}
+  .feedrow .fi{width:122px;flex:0 0 122px}
+  .feedrow .fn{font-weight:600;font-size:13px}
+  .feedrow .ft{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  .feedrow .fv{flex:1}
+  .feedrow .verdict{display:inline-flex;align-items:center;gap:8px;margin-bottom:3px}
+  .feedrow .ex{font-size:12px;color:var(--ink2)}
+  .feedrow .src{font-size:11px;color:var(--muted);margin-top:3px}
+  .feedrow.uncov{opacity:.55}
+
+  footer{border-top:1px solid var(--line);color:var(--muted);font-size:12px;padding:18px 0;margin-top:30px}
+  .hide{display:none}
+  .meth p{max-width:740px;color:var(--ink2)}
+  .meth h3{margin:22px 0 6px}
+</style>
+<script>
+  /* set theme before paint to avoid flash of wrong theme */
+  (function(){var t;try{t=localStorage.getItem('riskmosaic-theme')}catch(e){}
+  if(t!=='dark'&&t!=='light')t='light';
+  document.documentElement.setAttribute('data-theme',t);})();
+</script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="logo">Risk<span class="o">Mosaic</span></div>
+  <span class="pill">v0 prototype</span>
+  <nav>
+    <a href="#" class="active" id="nav-overview" onclick="showView('overview');return false">Overview</a>
+    <a href="#" id="nav-matrix" onclick="showView('matrix');return false">Full matrix</a>
+    <a href="#" id="nav-meth" onclick="showView('meth');return false">Methodology</a>
+    <button class="themebtn" id="themebtn" onclick="toggleTheme()" title="Light / dark theme" aria-label="Toggle dark mode">🌙</button>
+  </nav>
+</div></header>
+
+<div class="sample">Demo build. The feed verdicts are <b>real</b> and link to their public source; TVL is <b>live from DefiLlama</b>. June&nbsp;2026 snapshot. The governance column shows each protocol's DAO.</div>
+
+<div class="wrap" id="head-block">
+  <div class="hero">
+    <h1>Neutral DeFi Risk Intelligence</h1>
+    <p id="lede">Each ring shows how the major risk feeds read one protocol. Every slice is one feed's own verdict, in its own words. More green means more independent sources call the protocol low-concern. Grey slices are feeds that haven't covered it yet.</p>
+    <div class="creed"><span>We show each feed's rating <b>verbatim</b> and add <b>no score of our own</b>. When feeds disagree, you see it.</span></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">8</div><div class="l">Protocols (demo)</div></div>
+    <div class="kpi"><div class="n">8</div><div class="l">Feeds</div></div>
+    <div class="kpi"><div class="n">41%</div><div class="l">Cells covered · 26/64</div></div>
+    <div class="kpi"><div class="n">5</div><div class="l">Sources with data</div></div>
+    <div class="kpi"><div class="n">Jun 2026</div><div class="l">Snapshot</div></div>
+  </div>
+  <div class="controls">
+    <span class="lab">I care about:</span>
+    <span class="chip on" data-c="all" onclick="setConcern('all')">All risk</span>
+    <span class="chip" data-c="admin" onclick="setConcern('admin')">Admin control</span>
+    <span class="chip" data-c="governance" onclick="setConcern('governance')">Governance</span>
+    <span class="chip" data-c="code" onclick="setConcern('code')">Code</span>
+    <span class="chip" data-c="liquidation" onclick="setConcern('liquidation')">Liquidation</span>
+  </div>
+  <div class="legend">
+    <span class="sw"><span class="dot d-good"></span>feed reads low-concern</span>
+    <span class="sw"><span class="dot d-caution"></span>caution</span>
+    <span class="sw"><span class="dot d-alert"></span>elevated concern</span>
+    <span class="sw"><span class="dot d-info"></span>covered, no rating (dashboard/report)</span>
+    <span class="sw"><span class="dot d-none"></span>not yet covered</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <table id="overview"><thead id="ohead"></thead><tbody id="obody"></tbody></table>
+  <table id="grid" class="hide"><thead id="ghead"></thead><tbody id="gbody"></tbody></table>
+</div>
+
+<div id="view-meth" class="wrap meth hide">
+  <div class="hero"><h1>Methodology</h1>
+  <p>RiskMosaic is an aggregation layer. It gathers what existing risk feeds publish and shows it verbatim. It produces no rating or score of its own.</p></div>
+  <h3>No composite scoring, by charter</h3>
+  <p>No single feed should be the last word on something this important; that is the logic of oracle diversity. Putting the feeds side by side, without averaging them, is the whole point. The no-score rule lives in a charter in the repository, and changing it would need written agreement from the Ethereum Foundation.</p>
+  <h3>The ring &amp; the colours</h3>
+  <p>Each ring has one slice per feed, coloured on that feed's <em>own</em> scale: DeFiScan's Stage (0/1/2), DeFiPunk'd's slice colours, and so on. We never average them. A feed that publishes data but no good/bad rating, like a dashboard or a research note, shows as a neutral "covered". The centre stays empty on purpose, because there is no overall score.</p>
+  <h3>Feed registry</h3>
+  <p>Each feed is listed with its focus and methodology type (Rating / Dashboard / Monitoring / Research). Inclusions and exclusions are documented with rationale to maximise diversity of coverage methodologies.</p>
+  <h3>Coverage &amp; provenance</h3>
+  <p>Every cell is labelled covered, partial, or not yet covered, so the gaps show up as data instead of disappearing into an average. Every verdict links back to its source. In this demo the feed verdicts are real and sourced, TVL is live from DefiLlama, and the governance column shows each protocol's DAO.</p>
+</div>
+
+<div class="scrim" id="scrim" onclick="closePanel()"></div>
+<aside class="panel" id="panel"></aside>
+
+<footer><div class="wrap">
+  <div><strong>RiskMosaic</strong> · a neutral DeFi risk intelligence aggregator.</div>
+  <div style="margin-top:6px">Open source under <a href="https://github.com/cp0x-org/risk-mosaic" target="_blank" rel="noopener">AGPL-3.0 on GitHub</a>. Read the code, trace any number back to the source it links to, and run the whole thing yourself. Prototype: feed verdicts real &amp; sourced, TVL live from DefiLlama.</div>
+</div></footer>
+
+<script>
+const TONE_RANK={good:0.16,caution:0.5,alert:0.84};
+function rosPalette(){var cs=getComputedStyle(document.documentElement),g=function(n){return cs.getPropertyValue(n).trim()};
+  return {good:g('--tone-good'),caution:g('--tone-caution'),alert:g('--tone-alert'),info:g('--tone-info'),none:g('--ros-none'),sep:g('--ros-sep'),center:g('--ros-center')};}
+const feeds=[
+  {id:'defiscan',name:'DeFiScan',type:'Rating',dims:['admin','governance','code']},
+  {id:'defipunkd',name:"DeFiPunk'd",type:'Rating',dims:['admin','code','governance']},
+  {id:'llamarisk',name:'LlamaRisk',type:'Research',dims:['governance','deps','liquidation']},
+  {id:'blockanalitica',name:'BlockAnalitica',type:'Dashboard',dims:['liquidation']},
+  {id:'defisaver',name:'DeFi Saver',type:'Dashboard',dims:['liquidation']},
+  {id:'credora',name:'Credora',type:'Rating',dims:['liquidation','code']},
+  {id:'xerberus',name:'Xerberus',type:'Rating',dims:['code']},
+  {id:'pharos',name:'Pharos',type:'Monitoring',dims:['liquidation']},
+];
+function C(l,t,x,src){return{s:'cov',l,t,x,src}}
+const N={s:'non',l:'○',t:'none',x:'Not yet covered by this feed.'};
+// Feed verdicts REAL (each feed's public source, Jun 2026). TVL live from DefiLlama (Jun 2026). Governance = protocol DAO.
+const protocols=[
+ {n:'Aave',c:'Lending',cat:'Lending',ic:'Aa',tvl:'$12.8b',gov:'Aave DAO',v:{
+   defiscan:C('Stage 0','caution','DeFiScan decentralization review: Stage 0.','https://www.defiscan.info/protocols/aave/ethereum'),
+   defipunkd:C('orange','caution',"DeFiPunk'd 5-dimension grades (Control/Exit/Autonomy/Access/Verifiability): mostly orange.",'https://www.defipunkd.com'),
+   llamarisk:C('report','info','LlamaRisk published risk reports (ARFC, GHO PegKeeper, e-mode).','https://www.llamarisk.com/research'),
+   blockanalitica:C('dashboard','info','BlockAnalitica on-chain risk dashboard.','https://aave.blockanalitica.com'),
+   defisaver:C('live','info','Position management & loan-health in DeFi Saver.','https://defisaver.com'),
+   credora:N,xerberus:N,pharos:N}},
+ {n:'Morpho',c:'Lending',cat:'Lending',ic:'Mo',tvl:'$7.0b',gov:'Morpho DAO',v:{
+   defiscan:C('Stage 1','caution','DeFiScan decentralization review: Stage 1.','https://www.defiscan.info/protocols/morpho/ethereum'),
+   defipunkd:C('mixed','caution',"DeFiPunk'd 5-dimension grades: green/orange mix.",'https://www.defipunkd.com'),
+   llamarisk:C('report','info','LlamaRisk Morpho Vaults collateral risk disclaimer.','https://www.llamarisk.com/research'),
+   blockanalitica:C('dashboard','info','BlockAnalitica per-market liquidation dashboard.','https://morpho.blockanalitica.com'),
+   defisaver:C('live','info','Supported in DeFi Saver.','https://defisaver.com'),
+   credora:N,xerberus:N,pharos:N}},
+ {n:'Spark',c:'Lending',cat:'Lending',ic:'Sp',tvl:'$4.8b',gov:'Sky sub-DAO',v:{
+   defiscan:C('Stage 0','caution','DeFiScan decentralization review: Stage 0.','https://www.defiscan.info/protocols/spark/ethereum'),
+   defipunkd:C('red','alert',"DeFiPunk'd 5-dimension: red on Exit & Autonomy.",'https://www.defipunkd.com'),
+   llamarisk:N,
+   blockanalitica:C('dashboard','info','BlockAnalitica collateral-health dashboard.','https://spark.blockanalitica.com'),
+   defisaver:C('live','info','Supported in DeFi Saver.','https://defisaver.com'),
+   credora:N,xerberus:N,pharos:N}},
+ {n:'Gearbox',c:'Leverage lending',cat:'Lending',ic:'Ge',tvl:'$19M',gov:'Gearbox DAO',v:{
+   defiscan:N,defipunkd:N,llamarisk:N,blockanalitica:N,defisaver:N,credora:N,xerberus:N,pharos:N}},
+ {n:'Uniswap',c:'DEX / AMM',cat:'DEX / AMM',ic:'Un',tvl:'$2.9b',gov:'Uniswap DAO',v:{
+   defiscan:C('Stage 2','good','DeFiScan decentralization review: Stage 2 (highest; immutable v3 core).','https://www.defiscan.info/protocols/uniswap-v3/ethereum'),
+   defipunkd:C('green','good',"DeFiPunk'd 5-dimension: all green.",'https://www.defipunkd.com'),
+   llamarisk:N,blockanalitica:N,defisaver:N,credora:N,xerberus:N,pharos:N}},
+ {n:'Curve',c:'DEX / AMM',cat:'DEX / AMM',ic:'Cu',tvl:'$1.4b',gov:'veCRV DAO',v:{
+   defiscan:C('Stage 0','caution','DeFiScan decentralization review: Stage 0.','https://www.defiscan.info/protocols/curve-finance/ethereum'),
+   defipunkd:C('green','good',"DeFiPunk'd 5-dimension: all green.",'https://www.defipunkd.com'),
+   llamarisk:C('report','info',"LlamaRisk is Curve's official risk manager; it publishes reports.",'https://gov.curve.finance'),
+   blockanalitica:N,
+   defisaver:C('live','info','crvUSD / LlamaLend supported in DeFi Saver.','https://defisaver.com'),
+   credora:N,xerberus:N,pharos:N}},
+ {n:'Lido',c:'Liquid staking',cat:'Liquid staking',ic:'Li',tvl:'$16.1b',gov:'Lido dual-gov',v:{
+   defiscan:C('Stage 0','caution','DeFiScan decentralization review: Stage 0.','https://www.defiscan.info/protocols/lido-v2/ethereum'),
+   defipunkd:C('mixed','caution',"DeFiPunk'd 5-dimension: orange/green mix.",'https://www.defipunkd.com'),
+   llamarisk:N,blockanalitica:N,defisaver:N,credora:N,xerberus:N,pharos:N}},
+ {n:'Pendle',c:'Yield / fixed-rate',cat:'Yield / Vault',ic:'Pe',tvl:'$1.2b',gov:'vePENDLE DAO',v:{
+   defiscan:C('Stage 0','caution','DeFiScan decentralization review: Stage 0.','https://www.defiscan.info/protocols/pendle/ethereum'),
+   defipunkd:C('mixed','caution',"DeFiPunk'd 5-dimension: orange/green mix.",'https://www.defipunkd.com'),
+   llamarisk:C('report','info','LlamaRisk Pendle Principal Token Risk Oracle report.','https://www.llamarisk.com/research'),
+   blockanalitica:N,defisaver:N,credora:N,xerberus:N,pharos:N}},
+];
+
+let concern='all';
+let _openIdx=null;
+function relevant(f){return concern==='all'||f.dims.includes(concern)}
+
+function rosette(p,size){
+  size=size||46;const cx=size/2,cy=size/2,r=size/2-2;const n=feeds.length,seg=360/n;
+  const P=rosPalette();
+  let s=`<svg class="ros" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+  feeds.forEach((f,i)=>{
+    const v=p.v[f.id];const col=v.s==='non'?P.none:P[v.t];
+    const a0=(-90+i*seg)*Math.PI/180,a1=(-90+(i+1)*seg)*Math.PI/180;
+    const x0=(cx+r*Math.cos(a0)).toFixed(2),y0=(cy+r*Math.sin(a0)).toFixed(2);
+    const x1=(cx+r*Math.cos(a1)).toFixed(2),y1=(cy+r*Math.sin(a1)).toFixed(2);
+    const op=relevant(f)?1:0.16;
+    s+=`<path d="M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1} Z" fill="${col}" fill-opacity="${op}" stroke="${P.sep}" stroke-width="1.5"><title>${f.name}: ${v.s==='non'?'not covered':v.l}</title></path>`;
+  });
+  s+=`<circle cx="${cx}" cy="${cy}" r="${(r*0.40).toFixed(1)}" fill="${P.center}"/></svg>`;return s;
+}
+
+function renderOverview(){
+  document.getElementById('ohead').innerHTML='<tr><th class="proto">Protocol</th><th style="text-align:center">Feed verdicts</th><th style="text-align:right">TVL</th><th>Governance</th><th>Coverage</th></tr>';
+  let b='';let last='';
+  protocols.forEach((p,i)=>{
+    if(p.cat!==last){b+=`<tr class="grp"><td colspan="5">${p.cat}</td></tr>`;last=p.cat}
+    let cov=0;feeds.forEach(f=>{if(p.v[f.id].s!=='non')cov++});
+    b+=`<tr class="row" onclick="openPanel(${i})">
+      <td class="pname"><div class="pn"><div class="ico">${p.ic}</div><div><div class="nm">${p.n}</div><div class="ct">${p.c}</div></div></div></td>
+      <td class="roscell">${rosette(p)}</td>
+      <td class="num"><span class="mono">${p.tvl}</span></td>
+      <td class="gov">${p.gov}</td>
+      <td class="covtxt">${cov} of ${feeds.length} feeds</td></tr>`;
+  });
+  document.getElementById('obody').innerHTML=b;
+}
+
+function renderGrid(){
+  let h='<tr><th class="proto">Protocol</th><th>TVL</th><th>Governance</th>';
+  feeds.forEach(f=>{h+=`<th class="feedh ${relevant(f)?'':'dim'}">${f.name}<span class="ty">${f.type}</span></th>`});
+  h+='<th></th></tr>';document.getElementById('ghead').innerHTML=h;
+  let b='';let last='';
+  protocols.forEach((p,i)=>{
+    if(p.cat!==last){b+=`<tr class="grp"><td colspan="${feeds.length+4}">${p.cat}</td></tr>`;last=p.cat}
+    let cov=0;feeds.forEach(f=>{if(p.v[f.id].s!=='non')cov++});
+    b+=`<tr class="row" onclick="openPanel(${i})"><td class="pname"><div class="pn"><div class="ico">${p.ic}</div><div><div class="nm">${p.n}</div><div class="ct">${p.c}</div></div></div></td>
+      <td class="num"><span class="mono">${p.tvl}</span></td><td class="gov">${p.gov}</td>`;
+    feeds.forEach(f=>{const v=p.v[f.id];b+=`<td class="cell ${relevant(f)?'':'dim'}"><span class="v ${v.t}">${v.l}</span></td>`});
+    b+=`<td class="cov">${cov}/${feeds.length}</td></tr>`;
+  });
+  document.getElementById('gbody').innerHTML=b;
+}
+
+function setConcern(c){concern=c;document.querySelectorAll('.chip').forEach(ch=>ch.classList.toggle('on',ch.dataset.c===c));renderOverview();renderGrid()}
+
+function openPanel(i){
+  _openIdx=i;
+  const p=protocols[i];const panel=document.getElementById('panel');
+  const rated=feeds.filter(f=>['good','caution','alert'].includes(p.v[f.id].t)&&p.v[f.id].s!=='non');
+  const ratedSorted=[...rated].sort((a,b)=>TONE_RANK[p.v[a.id].t]-TONE_RANK[p.v[b.id].t]);
+  let chips='';ratedSorted.forEach(f=>{const v=p.v[f.id];chips+=`<div class="sp-chip"><span class="v ${v.t}">${v.l}</span><span class="sp-fn">${f.name}</span></div>`});
+  const spread=rated.length?`<div class="sec-t">Where the rating feeds land</div><p class="sub">Rating feeds, ordered from lower to higher concern. Each one stands on its own; we never average them.</p>
+    <div class="spread2"><span class="sp-end">lower</span>${chips}<span class="sp-end">higher</span></div>`:'';
+  let rows='';feeds.forEach(f=>{const v=p.v[f.id];const un=v.s==='non';
+    rows+=`<div class="feedrow ${un?'uncov':''}"><div class="fi"><div class="fn">${f.name}</div><div class="ft">${f.type}</div></div>
+      <div class="fv"><div class="verdict"><span class="v ${v.t}">${v.l}</span>${v.s==='par'?'<span class="ft">partial coverage</span>':''}</div>
+      <div class="ex">${v.x}</div>${un?'':`<div class="src"><a href="${v.src||'#'}" target="_blank" rel="noopener">source ↗</a> · ${v.t==='info'?'coverage':'verdict'} · Jun 2026</div>`}</div></div>`});
+  panel.innerHTML=`<div class="ph"><span class="x" onclick="closePanel()">✕</span>
+    <h2><span class="ico">${p.ic}</span> ${p.n}</h2>
+    <div class="meta"><div><div class="l">Category</div><div class="v2">${p.c}</div></div>
+      <div><div class="l">TVL · DefiLlama</div><div class="v2">${p.tvl}</div></div>
+      <div><div class="l">Governance</div><div class="v2">${p.gov}</div></div></div></div>
+    <div class="pbody"><div class="panelros">${rosette(p,76)}<div class="sub" style="margin:0">One slice per feed, straight from the source.<br>Empty centre, no overall score.</div></div>
+    ${spread}
+    <div class="sec-t">What every feed says, in its own words</div><p class="sub">Side by side, with nothing merged. Where a feed stays silent, we leave the gap visible.</p>
+    ${rows}</div>`;
+  document.getElementById('scrim').classList.add('open');panel.classList.add('open');
+}
+function closePanel(){_openIdx=null;document.getElementById('scrim').classList.remove('open');document.getElementById('panel').classList.remove('open')}
+function showView(v){
+  document.getElementById('overview').classList.toggle('hide',v!=='overview');
+  document.getElementById('grid').classList.toggle('hide',v!=='matrix');
+  document.getElementById('view-meth').classList.toggle('hide',v!=='meth');
+  document.getElementById('head-block').classList.toggle('hide',v==='meth');
+  document.getElementById('lede').textContent = v==='matrix'
+    ? "Every protocol against every feed. Each cell carries that feed's own verdict, exactly as published: covered, partial, or not yet covered."
+    : "Each ring shows how the major risk feeds read one protocol. Every slice is one feed's own verdict, in its own words. More green means more independent sources call the protocol low-concern. Grey slices are feeds that haven't covered it yet.";
+  ['overview','matrix','meth'].forEach(k=>document.getElementById('nav-'+k).classList.toggle('active',k===v));
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  try{localStorage.setItem('riskmosaic-theme',t)}catch(e){}
+  var b=document.getElementById('themebtn');if(b)b.textContent=t==='dark'?'☀️':'🌙';
+  renderOverview();renderGrid();
+  if(_openIdx!=null&&document.getElementById('panel').classList.contains('open'))openPanel(_openIdx);
+}
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+  applyTheme(cur==='dark'?'light':'dark');
+}
+(function(){var b=document.getElementById('themebtn');
+  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';})();
+renderOverview();renderGrid();
+</script>
+</body>
+</html>
